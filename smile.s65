@@ -1,0 +1,53 @@
+	.byt $01, $10
+* = $1001
+	// BASIC program to boot the machine language code
+	.byt $0b, $10, $0a, $00, $9e, $34, $31, $30, $39, $00, $00, $00
+	// Clear the screen and move the cursor down 2 lines
+	lda #$93
+	jsr $ffd2
+	lda #$0d
+	jsr $ffd2
+	jsr $ffd2
+	// Get and push the current value of $9005
+	// (whose lower 4 bits specify the location of character
+	// shape data).
+	lda $9005
+	pha
+	// Write back the value with the lower nybble set to
+	// $F, which sets a character shape location of $1C00.
+	ora #$0f
+	sta $9005
+	// Draw four characters on screen which build up the
+	// smiley face.
+	ldx #$01
+	stx $1e00
+	inx
+	stx $1e01
+	inx
+	stx $1e16
+	inx
+	stx $1e17
+	// Set the color attribute for the smiley characters
+	// to black.
+	ldx #$0
+	stx $9600
+	stx $9601
+	stx $9616
+	stx $9617
+	// Accept a line of input (we do nothing with it;
+	// this just pauses till the user hits RETURN)
+	jsr $ffcf
+	// Restore the old character shape location
+	pla
+	sta $9005
+	// Return to BASIC
+	rts
+end
+	// Pad out to $1c00
+	.dsb $1c00 - end, 0
+	// Smiley shape data
+	.byt 0, 0, 0, 0, 0, 0, 0, 0
+	.byt $07, $1f, $3d, $7f, $7f, $ff, $ff, $ff
+	.byt $e0, $f8, $bc, $fe, $fe, $ff, $ff, $ff
+	.byt $ff, $ff, $df, $6f, $70, $3f, $1f, $07
+	.byt $ff, $ff, $fb, $f6, $0e, $fc, $f8, $e0
